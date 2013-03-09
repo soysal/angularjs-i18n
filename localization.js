@@ -65,7 +65,8 @@ angular.module('localization', [])
 				getLocalizedString : function (value)
 				{
 				//  default the result to an empty string
-					var translated = '!NO TRANSLATION!';
+					//##es: var translated = '!NO TRANSLATION!';
+					var translated = localize.format('!{0}!', value);
 
 				//  check to see if the resource file has been loaded
 					if (!localize.resourceFileLoaded)
@@ -73,7 +74,9 @@ angular.module('localization', [])
 					//  call the init method
 						localize.initLocalizedResources();
 					//  set the flag to keep from looping in init
-						localize.resourceFileLoaded = true;
+						//##es: causes false action; acts as loaded 
+						//##es: before the translations are fully loaded
+						//localize.resourceFileLoaded = true;
 					//  return the empty string
 						return translated;
 					}
@@ -84,10 +87,16 @@ angular.module('localization', [])
 						var log_untranslated = false;
 						var placeholders = [];
 
+						/* ##es: "placeholders" is an array:
+						var placeholders = [];
+
 						for(var i=1; i < arguments.length; i++)
 						{
 							placeholders.push(arguments[i]);
 						}
+						*/
+						// ##es:
+						var placeholders = (arguments.length>1) ? arguments[1] : [];
 
 						var translate = function(value, placeholders)
 						{
@@ -121,7 +130,8 @@ angular.module('localization', [])
 
 				//  return the value to the call
 					return translated;
-				} // ##es: reusable replace. required for the directive
+				} 
+				// ##es: reusable replace. required for the directive
 				,
 				replace: function(elm, str) {
 					var tag = localize.getLocalizedString(str);
@@ -135,6 +145,7 @@ angular.module('localization', [])
 					}
 				},
 				format: function(value, args) {
+					args = ((typeof(args)=='object')&&(args instanceof Array))?args:[args];
 					return value.replace(/{(\d+)}/g, 
 						function(match, number) {
 							return typeof args[number]!='undefined'? args[number]: match;
