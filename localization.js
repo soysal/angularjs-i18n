@@ -2,7 +2,7 @@ angular.module('localization', [])
 //  create our localization service
 .factory
 (
-    'localize',
+	'localize',
 	[
 		'$http', '$rootScope', '$window',
 		function($http, $rootScope, $window)
@@ -99,9 +99,11 @@ angular.module('localization', [])
 								{
 									//  Log untranslated value
 								}
-								return sprintf(value, placeholders);
+								//##es sprintf replaced by format function:
+								return localize.format(value, placeholders);
 							}
-							return sprintf(translated, placeholders);
+							//##es sprintf replaced by format function:
+							return localize.format(translated, placeholders);
 						};
 
 						var result = translate(value, placeholders);
@@ -131,6 +133,13 @@ angular.module('localization', [])
 						//##es replace the text
 						elm.html(tag);
 					}
+				},
+				format: function(value, args) {
+					return value.replace(/{(\d+)}/g, 
+						function(match, number) {
+							return typeof args[number]!='undefined'? args[number]: match;
+						}
+					);
 				}
 			};
 
@@ -149,7 +158,14 @@ angular.module('localization', [])
 		{
 			return function (input)
 			{
-				return localize.getLocalizedString(input);
+				//##es: process filter parameters
+				var args = [];
+				for(var i=1; i < arguments.length; i++)
+				{
+					args.push(arguments[i]);
+				}
+				return localize.getLocalizedString(input, args);
+				//##/es
 			};
 		}
 	]
@@ -165,17 +181,7 @@ angular.module('localization', [])
 			return {
 				restrict : "EAC",
 				link : function (scope, elm, attrs)
-				{
-				//  construct the tag to insert into the element
-					var tag = localize.getLocalizedString(attrs.i18n);
-
-				//  update the element only if data was returned
-					if( (tag !== null) && (tag !== undefined) && (tag !== '') )
-					{
-					//  insert the text into the element
-						elm.append(tag);
-					}
-					
+				{				
 					//##es if the i18n tag exists/has a value, use it, 
 					//##es otherwise get the content of element
 					//##es this will let us use default values within the tag
